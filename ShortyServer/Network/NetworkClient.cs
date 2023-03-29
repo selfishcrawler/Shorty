@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 
 namespace ShortyServer.Network;
 
@@ -16,6 +15,6 @@ internal class NetworkClient : INetworkClient
 
     public async Task HandleConnection()
     {
-
+        logger.LogInformation("Connection successful");
     }
 }

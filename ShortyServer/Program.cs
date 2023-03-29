@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using ShortyServer.Configuration;
 using ShortyServer.Network;
 using System.Net.Sockets;
@@ -30,6 +29,7 @@ internal class Program
         {
             var connectionService = serviceProvider.GetRequiredService<IConnectionService>();
             connectionService.Start();
+            _ = connectionService.HandleIncomingConnections();
         }
         catch (ArgumentException ae)
         {
@@ -40,6 +40,10 @@ internal class Program
         {
             return;
         }
-        Console.ReadKey();
+
+        while (true)
+        {
+            string cmd = Console.ReadLine();
+        }
     }
 }

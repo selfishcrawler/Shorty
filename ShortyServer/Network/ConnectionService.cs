@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using ShortyServer.Configuration;
 using System.Net;
 using System.Net.Sockets;
@@ -36,6 +35,7 @@ internal class ConnectionService : IConnectionService
             throw new ArgumentException("Invalid port range", nameof(port));
         }
 
+        clients = new List<INetworkClient>();
         listener = new TcpListener(ip, port);
         logger.LogInformation("Initialized with IP: {ip}, Port: {port}", ip, port);
     }
@@ -58,16 +58,24 @@ internal class ConnectionService : IConnectionService
     {
         while (!cts.IsCancellationRequested)
         {
-            var tcpClient = await listener.AcceptTcpClientAsync(cts.Token);
-            var networkClient = factory.Create(tcpClient);
-            clients.Add(networkClient);
-            _ = networkClient.HandleConnection().ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
+                var tcpClient = await listener.AcceptTcpClientAsync(cts.Token);
+                var networkClient = factory.Create(tcpClient);
+                clients.Add(networkClient);
+                _ = networkClient.HandleConnection().ContinueWith(t =>
                 {
-                    // Handle client exception here...
-                }
-            });
+                    if (t.IsFaulted)
+                    {
+                        // Handle client exception here...
+                    }
+                });
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failure during user connection");
+            }
         }
     }
 
